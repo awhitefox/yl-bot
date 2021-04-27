@@ -12,4 +12,5 @@ async def on_ready():
     print(f'Logged in as {bot.user}')
 
 
+bot.load_extension('cogs.weather')
 bot.run(os.environ['TOKEN'])
