@@ -12,4 +12,9 @@ async def on_ready():
     print(f'Logged in as {bot.user}')
 
 
+@bot.event
+async def on_command_error(ctx, error):
+    await ctx.send(f':x: **Не удалось выполнить команду:** {error}')
+
+
 bot.run(os.environ['TOKEN'])
