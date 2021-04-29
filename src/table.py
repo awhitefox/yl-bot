@@ -1,4 +1,4 @@
-from .db_funcs import commit, execute_query, _generate_sql_where_from_dict
+from .db_funcs import commit, execute_query, _generate_sql_where_from_dict, _generate_sql_tuple
 from typing import Union
 
 
@@ -10,29 +10,35 @@ class CreatedTable:
         commit()
         self.selected_data = []
 
+    # Получение данных из таблицы в виде списка кортежей
     def get_data(self, limit: int = None) -> list:
         query = f"SELECT {', '.join(self.columns)} FROM {self.table} "
         if limit is not None:
             query += f"LIMIT {limit}"
         return execute_query(query).fetchall()
 
+    # Поиск элемента по значению столбца 'id'(можно указать другой)
     def find(self, index: int, name_id_field: str = 'id'):
         self.selected_data.extend(execute_query(
             f"select {', '.join(self.columns)} from {self.table} where {name_id_field}={index}").fetchall())
         return self
 
+    # Поиск элемента по через sql where условие
     def where(self, where_cond: str):
         self.selected_data.extend(execute_query(
             f"select {', '.join(self.columns)} from {self.table} where {where_cond}").fetchall())
         return self
 
+    # Получение выбранных(методы where и find) элементов
     def get_selected_data(self) -> list:
         return self.__make_dict_data(self.selected_data)
 
+    # Очистка массива с выбранными элементами
     def clear_selected_data(self):
         self.selected_data = []
         return self
 
+    # Получение данных из таблицы в виде массива словарей(ключ - имя столбца, значение - значение элемента в таблице)
     def get_form_data(self, limit: int = 0, where_cond: str = None) -> list:
         query = f"SELECT {', '.join(self.columns)} FROM {self.table} "
         if where_cond:
@@ -53,6 +59,7 @@ class CreatedTable:
             new_data.append(tmp)
         return new_data
 
+    # Удаление элементов которые прошли выборку(методы where и find)
     def delete(self) -> bool:
         data = self.get_selected_data()
         for elem in data:
@@ -64,6 +71,7 @@ class CreatedTable:
         self.clear_selected_data()
         return True
 
+    # Изменение выбранных элементов. В метод передаются кварги(ключ - имя столбца, значение - новое значение элемента)
     def update(self, **kwargs: Union[str, int]) -> bool:
         data = self.get_selected_data()
         for elem in data:
@@ -83,7 +91,10 @@ class CreatedTable:
         self.clear_selected_data()
         return True
 
-    def insert(self, *args: Union[list, dict, tuple], **kwargs: Union[str, int]) -> bool:
+    # Вставка данных. Можно передать кортеж/список:  .insert(["value1", 2, True]
+    # или словарь: .insert({'col1': 'value1', 'col2': 2, 'col3': True})
+    # или через кварги .insert(col1='value1', col2=2, col3=True)
+    def insert(self, *args: Union[list, dict, tuple], **kwargs: Union[str, int, bool]) -> bool:
         if len(args) > 0:
             if type(*args) == dict:
                 execute_query(self._query_dict_insert(*args))
@@ -98,22 +109,9 @@ class CreatedTable:
             execute_query(f'INSERT INTO {self.table} VALUES ()')
             return True
 
-    def __sql_tuple(self, values: Union[list, tuple]) -> str:
-        query = "("
-        for elem in values:
-            if type(elem) != str or elem.upper() == 'DEFAULT':
-                query += str(elem)
-                query += ", "
-            else:
-                query += f"'{elem}'"
-                query += ", "
-        query = query.rstrip(" ,")
-        query += ");"
-        return query
-
     def _query_list_insert(self, collection: Union[list, tuple]) -> str:
         query = f"INSERT INTO {self.table} VALUES "
-        query += self.__sql_tuple(collection)
+        query += _generate_sql_tuple(collection)
         return query
 
     def _query_dict_insert(self, data: dict) -> str:
@@ -125,10 +123,11 @@ class CreatedTable:
             query += ", "
         query = query.rstrip(" ,")
         query += ") VALUES "
-        query += self.__sql_tuple(values)
+        query += _generate_sql_tuple(values)
 
         return query
 
+    # Удалить таблицу
     def drop(self) -> bool:
         execute_query(f"DROP TABLE {self.table}")
         return True
