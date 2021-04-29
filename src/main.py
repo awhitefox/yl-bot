@@ -27,7 +27,8 @@ async def help_command(ctx: commands.Context):
     await ctx.send(embed=embed)
   
 
-db_funcs.set_connection(os.environ['DATABASE_URL'])
+db_funcs.set_connection(os.environ['DATABASE_URL'], autocommit=True)
 bot.load_extension('cogs.cats')
 bot.load_extension('cogs.weather')
+bot.load_extension('cogs.school_timetables')
 bot.run(os.environ['TOKEN'])
