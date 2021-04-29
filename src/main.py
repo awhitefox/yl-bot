@@ -15,7 +15,8 @@ async def on_ready():
 
 @bot.event
 async def on_command_error(ctx: commands.Context, error: Exception):
-    await ctx.send(f':x: **Не удалось выполнить команду:** {error}')
+    embed = discord.Embed(title=':x: Не удалось выполнить команду', description=str(error))
+    await ctx.send(embed=embed)
 
 
 @bot.command(name='help')
