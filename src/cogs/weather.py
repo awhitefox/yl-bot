@@ -21,9 +21,9 @@ class Weather(commands.Cog):
 
     @commands.command()
     async def weather(self, ctx: commands.Context, *, city: str):
-        w = self.get_current_weather(city)
+        w = self._get_current_weather(city)
         if w:
-            weather_emoji = self.get_emoji_by_condition_code(w['weather'][0]['id'])
+            weather_emoji = self._get_emoji_by_condition_code(w['weather'][0]['id'])
             weather_desc = w['weather'][0]['description'].capitalize()
 
             temp = round(w['main']['temp'], 1)
@@ -31,7 +31,7 @@ class Weather(commands.Cog):
             humidity = w['main']['humidity']
 
             wind_speed = w['wind']['speed']
-            wind_compass = self.degrees_to_compass(w['wind']['deg'])
+            wind_compass = self._degrees_to_compass(w['wind']['deg'])
 
             lines = [
                 f'{weather_emoji} **{weather_desc}**',
@@ -49,24 +49,24 @@ class Weather(commands.Cog):
 
     @commands.command()
     async def forecast(self, ctx: commands.Context, *, city: str):
-        current = self.get_current_weather(city)
+        current = self._get_current_weather(city)
 
         daily = None
         if current:
-            daily = self.get_weather_forecast(current['coord']['lat'], current['coord']['lon'])
+            daily = self._get_weather_forecast(current['coord']['lat'], current['coord']['lon'])
 
         if daily:
             embed = discord.Embed(title='Прогноз погоды в городе ' + current['name'])
 
             for d in daily['daily']:
-                weather_emoji = self.get_emoji_by_condition_code(d['weather'][0]['id'])
+                weather_emoji = self._get_emoji_by_condition_code(d['weather'][0]['id'])
                 weather_desc = d['weather'][0]['description'].capitalize()
 
                 temp_min = round(d['temp']['min'], 1)
                 temp_max = round(d['temp']['max'], 1)
 
                 wind_speed = d['wind_speed']
-                wind_compass = self.degrees_to_compass(d['wind_deg'])
+                wind_compass = self._degrees_to_compass(d['wind_deg'])
 
                 rain = d.get('rain')
 
@@ -85,7 +85,7 @@ class Weather(commands.Cog):
             embed = self.city_not_found_embed
         await ctx.send(embed=embed)
 
-    def get_current_weather(self, city: str) -> Optional[Dict[str, Any]]:
+    def _get_current_weather(self, city: str) -> Optional[Dict[str, Any]]:
         url = self.api_url + '/weather'
         params = {
             'appid': self.api_key,
@@ -96,7 +96,7 @@ class Weather(commands.Cog):
         response = requests.get(url, params=params)
         return response.json() if response.status_code == 200 else None
 
-    def get_weather_forecast(self, lat: float, lon: float) -> Optional[Dict[str, Any]]:
+    def _get_weather_forecast(self, lat: float, lon: float) -> Optional[Dict[str, Any]]:
         url = self.api_url + '/onecall'
         params = {
             'appid': self.api_key,
@@ -109,13 +109,13 @@ class Weather(commands.Cog):
         return response.json() if response.status_code == 200 else None
 
     @staticmethod
-    def degrees_to_compass(d: float) -> str:
+    def _degrees_to_compass(d: float) -> str:
         dirs = ['С', 'СВ', 'В', 'ЮВ', 'Ю', 'ЮЗ', 'З', 'СЗ']
         step = 360 / len(dirs)
         return dirs[round((d + step) % 360 / step) - 1]
 
     @staticmethod
-    def get_emoji_by_condition_code(code: int) -> str:
+    def _get_emoji_by_condition_code(code: int) -> str:
         m = code // 100
         if m == 8:
             return {
