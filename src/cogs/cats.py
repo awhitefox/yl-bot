@@ -14,23 +14,23 @@ class Cats(commands.Cog):
         if ctx.invoked_subcommand is not None:
             return
         if breed is None:
-            await ctx.send(self.get_random_cat_url())
+            await ctx.send(self._get_random_cat_url())
         else:
-            breed_id = self.find_breed_id(breed)
+            breed_id = self._find_breed_id(breed)
             if breed_id:
-                await ctx.send(self.get_cat_url_by_breed_id(breed_id))
+                await ctx.send(self._get_cat_url_by_breed_id(breed_id))
             else:
                 await ctx.send('Ничего не найдено')
 
-    def get_random_cat_url(self) -> str:
+    def _get_random_cat_url(self) -> str:
         data = requests.get(self.api_url + '/images/search').json()
         return data[0]['url']
 
-    def get_cat_url_by_breed_id(self, breed_id: str) -> str:
+    def _get_cat_url_by_breed_id(self, breed_id: str) -> str:
         data = requests.get(self.api_url + '/images/search', params={'breed_id': breed_id}).json()
         return data[0]['url']
 
-    def find_breed_id(self, query: str) -> Optional[str]:
+    def _find_breed_id(self, query: str) -> Optional[str]:
         data = requests.get(self.api_url + '/breeds/search', params={'q': query}).json()
         return data[0]['id'] if len(data) > 0 else None
 
