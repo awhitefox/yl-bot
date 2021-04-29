@@ -22,6 +22,7 @@ async def on_command_error(ctx: commands.Context, error: Exception):
 async def help_command(ctx: commands.Context):
     embed = discord.Embed(title='Помощь по командам', description=os.environ['HELP'])
     await ctx.send(embed=embed)
-
-
+  
+  
+bot.load_extension('cogs.cats')
 bot.run(os.environ['TOKEN'])
