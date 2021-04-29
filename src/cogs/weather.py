@@ -42,7 +42,7 @@ class Weather(commands.Cog):
                 f'**Влажность воздуха:** {humidity}%',
                 f'**Ветер:** {wind_speed} м/c {wind_compass}'
             ]
-            embed = discord.Embed(title='Погода в городе ' + w['name'], description='\n'.join(lines))
+            embed = discord.Embed(title='Погода сейчас: ' + w['name'], description='\n'.join(lines))
         else:
             embed = self.city_not_found_embed
         await ctx.send(embed=embed)
@@ -56,7 +56,7 @@ class Weather(commands.Cog):
             daily = self._get_weather_forecast(current['coord']['lat'], current['coord']['lon'])
 
         if daily:
-            embed = discord.Embed(title='Прогноз погоды в городе ' + current['name'])
+            embed = discord.Embed(title='Прогноз погоды: ' + current['name'])
 
             for d in daily['daily']:
                 weather_emoji = self._get_emoji_by_condition_code(d['weather'][0]['id'])
