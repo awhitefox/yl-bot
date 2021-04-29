@@ -1,12 +1,11 @@
-from typing import Union, Dict, Tuple, List
+from typing import Union, Dict, Tuple, List, Any
 
 import psycopg2
 
 _conn = None
 
 
-def _generate_sql_tuple(
-        values: Union[List[Union[str, int, bool, None]], Tuple[Union[str, int, bool, None]]]) -> str:
+def _generate_sql_tuple(values: Union[List[Any], Tuple[Any]]) -> str:
     query = "("
     for elem in values:
         if type(elem) != str or elem.upper() == 'DEFAULT':
@@ -20,7 +19,7 @@ def _generate_sql_tuple(
     return query
 
 
-def _generate_sql_where_from_dict(data: Dict[str, Union[str, int, bool, None]]) -> str:
+def _generate_sql_where_from_dict(data: Dict[str, Any]) -> str:
     sql = ""
     for key in data:
         if type(data[key]) == str:
@@ -56,7 +55,7 @@ def execute_query(query: str) -> psycopg2._psycopg.cursor:
 
 
 # Коммит последних запросов
-def commit():
+def commit() -> None:
     global _conn
     if _conn is not None:
         return _conn.commit()
@@ -64,7 +63,7 @@ def commit():
 
 # Получение данных из таблицы
 def db_read_table(table: str, limit: int = 0, sql_condition: str = '', order_by: Tuple[str, str] = ('', '')) \
-        -> List[Tuple[Union[str, int, bool, None]]]:
+        -> List[Tuple[Any]]:
     cursor = get_cursor()
     query = f'SELECT * FROM {table}'
     if sql_condition != '':

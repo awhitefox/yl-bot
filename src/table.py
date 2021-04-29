@@ -1,5 +1,5 @@
-from typing import Union, Dict, List, Tuple, Optional
-from .db_funcs import commit, execute_query, _generate_sql_where_from_dict, _generate_sql_tuple
+from typing import Union, Dict, List, Tuple, Optional, Any
+from .db_funcs import execute_query, _generate_sql_where_from_dict, _generate_sql_tuple
 
 
 class CreatedTable:
@@ -9,10 +9,9 @@ class CreatedTable:
         self.table = table_name
         self.cursor = execute_query(f'SELECT * FROM {table_name} LIMIT 0')
         self.columns = [desc[0] for desc in self.cursor.description]
-        commit()
         self.selected_data = []
 
-    def get_data(self, limit: Optional[int] = None) -> List[Tuple[Union[str, int, bool, None]]]:
+    def get_data(self, limit: Optional[int] = None) -> List[Tuple[Any]]:
         """Получение данных из таблицы в виде списка кортежей"""
         query = f"SELECT {', '.join(self.columns)} FROM {self.table} "
         if limit is not None:
@@ -31,7 +30,7 @@ class CreatedTable:
             f"SELECT {', '.join(self.columns)} FROM {self.table} WHERE {where_cond}").fetchall())
         return self
 
-    def get_selected_data(self) -> List[Dict[str, Union[str, int, bool, None]]]:
+    def get_selected_data(self) -> List[Dict[str, Any]]:
         """Получение выбранных(методы where и find) элементов"""
         return self.__make_dict_data(self.selected_data)
 
@@ -40,10 +39,9 @@ class CreatedTable:
         self.selected_data = []
         return self
 
-    def get_form_data(self, limit: int = 0, where_cond: Optional[str] = None) -> \
-            List[Dict[str, Union[str, int, bool, None]]]:
-        """Получение данных из таблицы
-        в виде массива словарей(ключ - имя столбца, значение - значение элемента в таблице)"""
+    def get_form_data(self, limit: int = 0, where_cond: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Получение данных из таблицы в виде массива словарей
+        (ключ - имя столбца, значение - значение элемента в таблице)"""
         query = f"SELECT {', '.join(self.columns)} FROM {self.table} "
         if where_cond:
             query += f"WHERE {where_cond} "
@@ -53,9 +51,7 @@ class CreatedTable:
         data = execute_query(query).fetchall()
         return self.__make_dict_data(data)
 
-    def __make_dict_data(self, data: Union[
-        List[Union[str, int, bool, None]], Tuple[Union[str, int, bool, None]]]) -> List[
-        Dict[str, Union[str, int, bool, None]]]:
+    def __make_dict_data(self, data: Union[List[Any], Tuple[Any]]) -> List[Dict[str, Any]]:
         new_data = []
         for elem in data:
             tmp = {}
@@ -65,7 +61,7 @@ class CreatedTable:
             new_data.append(tmp)
         return new_data
 
-    def delete(self) -> bool:
+    def try_delete(self) -> None:
         """Удаление элементов которые прошли выборку(методы where и find)"""
         data = self.get_selected_data()
         for elem in data:
@@ -75,12 +71,12 @@ class CreatedTable:
             sql += ";"
             execute_query(sql)
         self.clear_selected_data()
-        return True
+        return
 
-    def update(self, **kwargs: Union[str, int, bool, None]) -> bool:
+    def update(self, **kwargs: Any) -> None:
         """Изменение выбранных элементов.
-        Данные передаются через
-        именнованные необязательные параметры(ключ - имя столбца, значение - новое значение элемента)"""
+        Данные передаются через именнованные необязательные параметры
+        (ключ - имя столбца, значение - новое значение элемента)"""
         data = self.get_selected_data()
         for elem in data:
             sql = f"UPDATE {self.table} SET "
@@ -97,35 +93,32 @@ class CreatedTable:
             sql += ";"
             execute_query(sql)
         self.clear_selected_data()
-        return True
+        return
 
-    def insert(self, *args: Union[List[Union[str, int, bool, None]], Dict[str, Union[str, int, bool, None]],
-                                  Tuple[Union[str, int, bool, None]]],
-               **kwargs: Union[str, int, bool, None]) -> bool:
+    def insert(self, *args: Union[List[Any], Dict[str, Any], Tuple[Any]], **kwargs: Any) -> None:
         """Вставка данных. Можно передать кортеж/список:  .insert(["value1", 2, True])
         или словарь: .insert({'col1': 'value1', 'col2': 2, 'col3': True})
         или через именнованные необязательные параметры .insert(col1='value1', col2=2, col3=True)"""
         if len(args) > 0:
             if type(*args) == dict:
                 execute_query(self._query_dict_insert(*args))
-                return True
+                return
             else:
                 execute_query(self._query_list_insert(*args))
-                return True
+                return
         elif len(kwargs) > 0:
             execute_query(self._query_dict_insert(**kwargs))
-            return True
+            return
         else:
             execute_query(f'INSERT INTO {self.table} VALUES ()')
-            return True
+            return
 
-    def _query_list_insert(self, collection: Union[List[Union[str, int, bool, None]],
-                                                   Tuple[Union[str, int, bool, None]]]) -> str:
+    def _query_list_insert(self, collection: Union[List[Any], Tuple[Any]]) -> str:
         query = f"INSERT INTO {self.table} VALUES "
         query += _generate_sql_tuple(collection)
         return query
 
-    def _query_dict_insert(self, data: Dict[str, Union[str, int, bool, None]]) -> str:
+    def _query_dict_insert(self, data: Dict[str, Any]) -> str:
         keys = tuple(data)
         values = tuple(data.values())
         query = f"INSERT INTO {self.table}("
@@ -138,7 +131,7 @@ class CreatedTable:
 
         return query
 
-    def drop(self) -> bool:
+    def drop(self) -> None:
         """Удалить таблицу"""
         execute_query(f"DROP TABLE {self.table}")
-        return True
+        return
