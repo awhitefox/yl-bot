@@ -1,10 +1,12 @@
+from typing import Union, Dict, Tuple, List
+
 import psycopg2
-from typing import Union
 
 _conn = None
 
 
-def _generate_sql_tuple(values: Union[list, tuple]) -> str:
+def _generate_sql_tuple(
+        values: Union[List[Union[str, int, bool, None]], Tuple[Union[str, int, bool, None]]]) -> str:
     query = "("
     for elem in values:
         if type(elem) != str or elem.upper() == 'DEFAULT':
@@ -18,15 +20,15 @@ def _generate_sql_tuple(values: Union[list, tuple]) -> str:
     return query
 
 
-def _generate_sql_where_from_dict(data: dict) -> str:
+def _generate_sql_where_from_dict(data: Dict[str, Union[str, int, bool, None]]) -> str:
     sql = ""
     for key in data:
         if type(data[key]) == str:
-            sql += f"{key} = '{data[key]}' and "
+            sql += f"{key} = '{data[key]}' AND "
         elif data[key] is None:
-            sql += f"{key} is NULL and "
+            sql += f"{key} IS NULL AND "
         else:
-            sql += f"{key} = {data[key]} and "
+            sql += f"{key} = {data[key]} AND "
     return sql
 
 
@@ -61,17 +63,17 @@ def commit():
 
 
 # Получение данных из таблицы
-def db_read_table(table: str, limit: int = 0, sql_condition: str = '', order_by: tuple = ('', '')) -> tuple:
+def db_read_table(table: str, limit: int = 0, sql_condition: str = '', order_by: Tuple[str, str] = ('', '')) \
+        -> List[Tuple[Union[str, int, bool, None]]]:
     cursor = get_cursor()
     query = f'SELECT * FROM {table}'
     if sql_condition != '':
-        query += f" where {sql_condition}"
+        query += f" WHERE {sql_condition}"
     if order_by != ('', ''):
-        query += f" order by {order_by[0]} {order_by[1]}"
+        query += f" ORDER BY {order_by[0]} {order_by[1]}"
     if limit != 0:
-        query += f" limit {limit}"
+        query += f" LIMIT {limit}"
     query += ';'
     cursor.execute(query)
     data = cursor.fetchall()
-    cursor.cursor.commit()
     return data
