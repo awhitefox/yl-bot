@@ -3,7 +3,19 @@ import psycopg2
 _conn = None
 
 
-def set_connection(uri: str, autocommit=False) -> psycopg2._psycopg.connection:
+def _generate_sql_where_from_dict(data: dict) -> str:
+    sql = ""
+    for key in data:
+        if type(data[key]) == str:
+            sql += f"{key} = '{data[key]}' and "
+        elif data[key] is None:
+            sql += f"{key} is NULL and "
+        else:
+            sql += f"{key} = {data[key]} and "
+    return sql
+
+
+def set_connection(uri: str, autocommit: bool = False) -> psycopg2._psycopg.connection:
     global _conn
     if _conn is None:
         _conn = psycopg2.connect(uri)
@@ -29,7 +41,7 @@ def commit():
         return _conn.commit()
 
 
-def db_read_table(table, limit=0, sql_condition='', order_by=('', '')) -> tuple:
+def db_read_table(table: str, limit: int = 0, sql_condition: str = '', order_by: tuple = ('', '')) -> tuple:
     cursor = get_cursor()
     query = f'SELECT * FROM {table}'
     if sql_condition != '':
