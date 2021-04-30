@@ -10,9 +10,7 @@ class Cats(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def cat(self, ctx: commands.Context, breed: str = None):
-        if ctx.invoked_subcommand is not None:
-            return
+    async def cat(self, ctx: commands.Context, breed: Optional[str] = None):
         if breed is None:
             await ctx.send(self._get_random_cat_url())
         else:
