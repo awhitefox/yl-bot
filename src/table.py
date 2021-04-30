@@ -1,8 +1,8 @@
 from typing import Union, Dict, List, Tuple, Optional, Any
-from .db_funcs import execute_query, _generate_sql_where_from_dict, _generate_sql_tuple
+from db_funcs import execute_query, _generate_sql_where_from_dict, _generate_sql_tuple
 
 
-class CreatedTable:
+class Table:
     """Класс для работы с таблицей в БД"""
 
     def __init__(self, table_name: str):
