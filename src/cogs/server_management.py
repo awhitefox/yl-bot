@@ -25,6 +25,8 @@ class ServerManagement(commands.Cog):
         i = 0
         for ch in channels:
             if ch.permissions_for(ctx.author).manage_channels:
+                if not ch.permissions_for(ctx.guild.me).manage_channels:
+                    await ctx.send(f'У меня недостаточно прав, чтобы удалить канал {ch.mention}')
                 if ch == ctx.channel:
                     await ctx.send(f'Этой командой нельзя удалить текущий канал!')
                 else:
