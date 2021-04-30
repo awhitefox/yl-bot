@@ -31,8 +31,8 @@ def _generate_sql_where_from_dict(data: Dict[str, Any]) -> str:
     return sql
 
 
-# Установить подключение с базой данных
 def set_connection(uri: str, autocommit: bool = False) -> psycopg2._psycopg.connection:
+    """Установить подключение с базой данных"""
     global _conn
     if _conn is None:
         _conn = psycopg2.connect(uri)
@@ -40,30 +40,30 @@ def set_connection(uri: str, autocommit: bool = False) -> psycopg2._psycopg.conn
         return _conn
 
 
-# Получить курсор
 def get_cursor() -> psycopg2._psycopg.cursor:
+    """Получить курсор"""
     global _conn
     if _conn is not None:
         return _conn.cursor()
 
 
-# Отправить запрос в СУБД
 def execute_query(query: str) -> psycopg2._psycopg.cursor:
+    """Отправить запрос в СУБД"""
     cursor = get_cursor()
     cursor.execute(query)
     return cursor
 
 
-# Коммит последних запросов
 def commit() -> None:
+    """Коммит последних изменений"""
     global _conn
     if _conn is not None:
         return _conn.commit()
 
 
-# Получение данных из таблицы
 def db_read_table(table: str, limit: int = 0, sql_condition: str = '', order_by: Tuple[str, str] = ('', '')) \
         -> List[Tuple[Any]]:
+    """Получение данных из таблицы"""
     cursor = get_cursor()
     query = f'SELECT * FROM {table}'
     if sql_condition != '':
