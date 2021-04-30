@@ -6,7 +6,6 @@ from table import Table
 
 class Prefixes(commands.Cog):
     db_table_name = 'prefixes'
-    cached = {}
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -23,16 +22,15 @@ class Prefixes(commands.Cog):
 
     @classmethod
     def get_prefix(cls, guild_id: int) -> str:
-        if guild_id in cls.cached:
-            return cls.cached[guild_id]
-        else:
-            table = Table(cls.db_table_name)
-            table.where(f'guild_id={guild_id}')
-            data = table.get_selected_data()
+        table = Table(cls.db_table_name)
+        table.where(f'guild_id={guild_id}')
+        data = table.get_selected_data()
 
-            prefix = data[0]['prefix'] if data else os.environ['PREFIX']
-            cls.cached[guild_id] = prefix
+        if data:
+            prefix = data[0]['prefix']
             return prefix
+        else:
+            return os.environ['PREFIX']
 
     @classmethod
     def set_prefix(cls, guild_id: int, prefix: str) -> None:
@@ -43,7 +41,6 @@ class Prefixes(commands.Cog):
             table.update(prefix=prefix)
         else:
             table.insert({'guild_id': guild_id, 'prefix': prefix})
-        cls.cached[guild_id] = prefix
 
 
 def resolve_prefix(bot: commands.Bot, message: discord.Message):
