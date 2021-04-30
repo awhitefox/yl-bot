@@ -36,8 +36,10 @@ class ServerManagement(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.has_permissions(manage_roles=True)
     async def delete_roles(self, ctx: commands.Context, roles: commands.Greedy[discord.Role]):
+        if not ctx.author.guild_permissions.manage_roles:
+            raise commands.MissingPermissions(['manage_roles'])
+
         i = 0
         bot_top_role = ctx.guild.me.top_role
         for r in roles:
