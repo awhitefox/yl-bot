@@ -107,7 +107,7 @@ class CreatedTable:
                 execute_query(self._query_list_insert(*args))
                 return
         elif len(kwargs) > 0:
-            execute_query(self._query_dict_insert(**kwargs))
+            execute_query(self._query_dict_insert(kwargs))
             return
         else:
             execute_query(f'INSERT INTO {self.table} VALUES ()')
