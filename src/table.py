@@ -61,13 +61,13 @@ class CreatedTable:
             new_data.append(tmp)
         return new_data
 
-    def try_delete(self) -> None:
+    def delete(self) -> None:
         """Удаление элементов которые прошли выборку(методы where и find)"""
         data = self.get_selected_data()
         for elem in data:
             sql = f"DELETE FROM {self.table} WHERE "
             sql += _generate_sql_where_from_dict(elem)
-            sql = sql.rstrip("and ")
+            sql = sql.rstrip("AND ")
             sql += ";"
             execute_query(sql)
         self.clear_selected_data()
@@ -89,7 +89,7 @@ class CreatedTable:
             sql = sql.rstrip(', ')
             sql += " WHERE "
             sql += _generate_sql_where_from_dict(elem)
-            sql = sql.rstrip("and ")
+            sql = sql.rstrip("AND ")
             sql += ";"
             execute_query(sql)
         self.clear_selected_data()
