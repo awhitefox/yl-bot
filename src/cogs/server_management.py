@@ -4,8 +4,6 @@ from typing import Optional
 
 
 class ServerManagement(commands.Cog):
-    api_url = 'https://api.thecatapi.com/v1'
-
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
