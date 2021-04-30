@@ -27,4 +27,5 @@ async def help_command(ctx: commands.Context):
   
 bot.load_extension('cogs.cats')
 bot.load_extension('cogs.weather')
+bot.load_extension('cogs.server_management')
 bot.run(os.environ['TOKEN'])
